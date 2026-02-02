@@ -135,16 +135,10 @@ app.get("/api", (req, res) => {
 
 in server project:
 
-install path
-
-```
-npm i path
-```
-
 create npm dev script:
 
 ```
-"dev": "nodemon server.js",
+"dev": "node --watch server.js",
 ```
 
 run the dev script. You should now see the 'Hello from server!' message sent from the sever.
