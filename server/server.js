@@ -1,5 +1,12 @@
 const express = require("express");
-const path = require("path");
+const bcrypt = require("bcrypt");
+const path = require("node:path");
+const jwt = require("jsonwebtoken");
+const passport = require("passport");
+const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
+const LocalStrategy = require("passport-local").Strategy;
+const { Pool } = require("pg");
+const { body, validationResult } = require("express-validator");
 
 const PORT = process.env.PORT || 3001;
 
