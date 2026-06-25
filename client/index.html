@@ -32,12 +32,20 @@
       <div id="coursesPage" class="courses-view hidden">
         <h1>Courses</h1>
         <div id="coursesMessage" class="message"></div>
+        <div class="button-row">
+          <button id="profileBtn" class="secondary-btn">Profile</button>
+          <button id="logoutBtn" class="secondary-btn">Logout</button>
+        </div>
         <ul id="coursesList" class="courses-list"></ul>
-        <button id="logoutBtn" class="secondary-btn">Logout</button>
+      </div>
+
+      <div id="profilePage" class="courses-view hidden">
+        <h1>My Enrolled Courses</h1>
+        <div id="profileMessage" class="message"></div>
+        <ul id="profileList" class="courses-list"></ul>
+        <button id="profileBackBtn" class="secondary-btn">Back to Courses</button>
       </div>
     </div>
-
-
 
     <script>
       const loginForm = document.getElementById("loginForm");
@@ -45,21 +53,39 @@
       const toRegisterBtn = document.getElementById("toRegister");
       const toLoginBtn = document.getElementById("toLogin");
       const coursesPage = document.getElementById("coursesPage");
+      const profilePage = document.getElementById("profilePage");
       const coursesList = document.getElementById("coursesList");
+      const profileList = document.getElementById("profileList");
       const coursesMessage = document.getElementById("coursesMessage");
+      const profileMessage = document.getElementById("profileMessage");
       const logoutBtn = document.getElementById("logoutBtn");
+      const profileBtn = document.getElementById("profileBtn");
+      const profileBackBtn = document.getElementById("profileBackBtn");
       const formWrapper = document.querySelector(".form-wrapper");
 
       const apiAuth = {
         login: "/api/auth/login",
         register: "/api/auth/register",
         courses: "/api/courses",
+        profile: "/api/courses/profile",
       };
 
       function showCoursesView() {
         formWrapper.classList.add("hidden");
         coursesPage.classList.remove("hidden");
+        profilePage.classList.add("hidden");
         coursesPage.classList.add("active");
+        profilePage.classList.remove("active");
+        loginForm.classList.remove("active");
+        registerForm.classList.remove("active");
+      }
+
+      function showProfileView() {
+        formWrapper.classList.add("hidden");
+        coursesPage.classList.add("hidden");
+        profilePage.classList.remove("hidden");
+        profilePage.classList.add("active");
+        coursesPage.classList.remove("active");
         loginForm.classList.remove("active");
         registerForm.classList.remove("active");
       }
@@ -67,7 +93,9 @@
       function showAuthView() {
         formWrapper.classList.remove("hidden");
         coursesPage.classList.add("hidden");
+        profilePage.classList.add("hidden");
         coursesPage.classList.remove("active");
+        profilePage.classList.remove("active");
         loginForm.classList.add("active");
       }
 
@@ -117,6 +145,50 @@
         } catch (err) {
           coursesMessage.className = "message error";
           coursesMessage.textContent = "Unable to load courses.";
+        }
+      }
+
+      async function fetchProfile() {
+        profileMessage.textContent = "Loading enrolled courses...";
+        profileMessage.className = "message";
+        profileList.innerHTML = "";
+
+        try {
+          const token = localStorage.getItem("token");
+          const headers = { "Content-Type": "application/json" };
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
+          }
+
+          const response = await fetch(apiAuth.profile, { headers });
+          const data = await response.json();
+
+          if (!response.ok) {
+            profileMessage.className = "message error";
+            profileMessage.textContent = data.message || "Unable to load profile courses.";
+            return;
+          }
+
+          if (!Array.isArray(data.courses) || data.courses.length === 0) {
+            profileMessage.className = "message success";
+            profileMessage.textContent = "You are not enrolled in any courses.";
+            return;
+          }
+
+          profileMessage.textContent = "";
+          data.courses.forEach((course) => {
+            const item = document.createElement("li");
+            item.className = "course-item";
+            const fieldList = Object.entries(course)
+              .filter(([key]) => key !== "isEnrolled")
+              .map(([key, value]) => `<div><strong>${key}:</strong> ${value ?? ""}</div>`)
+              .join("");
+            item.innerHTML = fieldList;
+            profileList.appendChild(item);
+          });
+        } catch (err) {
+          profileMessage.className = "message error";
+          profileMessage.textContent = "Unable to load profile courses.";
         }
       }
 
@@ -227,6 +299,18 @@
         e.preventDefault();
         registerForm.classList.remove("active");
         loginForm.classList.add("active");
+      });
+
+      profileBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        showProfileView();
+        await fetchProfile();
+      });
+
+      profileBackBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        showCoursesView();
+        await fetchCourses();
       });
 
       loginForm.addEventListener("submit", async (e) => {

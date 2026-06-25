@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+h1 {
+    margin: 0;
+}
+
 body {
   display: flex;
   justify-content: center;
@@ -165,4 +169,12 @@ body {
   padding: 14px;
   margin-bottom: 12px;
   background: #ffffff;
+}
+
+.message {
+    margin: 0;
+}
+
+.button-row button {
+    margin: 0;
 }

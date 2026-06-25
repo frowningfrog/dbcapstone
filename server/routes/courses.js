@@ -68,6 +68,29 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET profile courses for the logged-in student
+router.get("/profile", requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT c.* FROM courses c
+       JOIN enrollment e ON c.course_id = e.course_id
+       WHERE e.student_id = $1`,
+      [req.studentId],
+    );
+
+    const profileCourses = rows.map((course) => ({
+      ...course,
+      id: course.course_id || course.id,
+      isEnrolled: true,
+    }));
+
+    res.json({ courses: profileCourses });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error fetching profile courses." });
+  }
+});
+
 // POST enroll in a course
 router.post("/:courseId/enroll", requireAuth, async (req, res) => {
   try {
