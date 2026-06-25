@@ -108,7 +108,7 @@
               .join("");
 
             const action = course.isEnrolled
-              ? `<div class="enrolled-label">Already enrolled</div>`
+              ? `<button class="drop-button" data-course-id="${course.id}">Drop</button>`
               : `<button class="enroll-button" data-course-id="${course.id}">Enroll</button>`;
 
             item.innerHTML = `${fieldList}${action}`;
@@ -121,40 +121,68 @@
       }
 
       coursesList.addEventListener("click", async (event) => {
-        if (!event.target.matches(".enroll-button")) {
+        const button = event.target.closest("button");
+        if (!button) {
           return;
         }
 
-        const courseId = event.target.dataset.courseId;
+        const courseId = button.dataset.courseId;
         const token = localStorage.getItem("token");
 
         if (!token) {
           coursesMessage.className = "message error";
-          coursesMessage.textContent = "You must be logged in to enroll.";
+          coursesMessage.textContent = "You must be logged in to enroll or drop courses.";
           return;
         }
 
-        try {
-          const response = await fetch(`${apiAuth.courses}/${courseId}/enroll`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
+        if (button.matches(".enroll-button")) {
+          try {
+            const response = await fetch(`${apiAuth.courses}/${courseId}/enroll`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
-          const data = await response.json();
-          if (response.ok) {
-            coursesMessage.className = "message success";
-            coursesMessage.textContent = data.message;
-            await fetchCourses();
-          } else {
+            const data = await response.json();
+            if (response.ok) {
+              coursesMessage.className = "message success";
+              coursesMessage.textContent = data.message;
+              await fetchCourses();
+            } else {
+              coursesMessage.className = "message error";
+              coursesMessage.textContent = data.message || "Unable to enroll.";
+            }
+          } catch (err) {
             coursesMessage.className = "message error";
-            coursesMessage.textContent = data.message || "Unable to enroll.";
+            coursesMessage.textContent = "Unable to enroll.";
           }
-        } catch (err) {
-          coursesMessage.className = "message error";
-          coursesMessage.textContent = "Unable to enroll.";
+        }
+
+        if (button.matches(".drop-button")) {
+          try {
+            const response = await fetch(`${apiAuth.courses}/${courseId}/drop`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+              coursesMessage.className = "message success";
+              coursesMessage.textContent = data.message;
+              await fetchCourses();
+            } else {
+              coursesMessage.className = "message error";
+              coursesMessage.textContent = data.message || "Unable to drop course.";
+            }
+          } catch (err) {
+            coursesMessage.className = "message error";
+            coursesMessage.textContent = "Unable to drop course.";
+          }
         }
       });
 

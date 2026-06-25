@@ -99,4 +99,28 @@ router.post("/:courseId/enroll", requireAuth, async (req, res) => {
   }
 });
 
+// DELETE drop enrollment for a course
+router.delete("/:courseId/drop", requireAuth, async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    if (!courseId || typeof courseId !== "string") {
+      return res.status(400).json({ message: "Invalid course ID." });
+    }
+
+    const { rowCount } = await pool.query(
+      "DELETE FROM enrollment WHERE student_id = $1 AND course_id = $2",
+      [req.studentId, courseId],
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Enrollment not found." });
+    }
+
+    res.json({ message: "Dropped course successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error dropping course." });
+  }
+});
+
 module.exports = router;
