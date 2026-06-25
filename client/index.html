@@ -42,6 +42,8 @@
       <div id="profilePage" class="courses-view hidden">
         <h1>My Enrolled Courses</h1>
         <div id="profileMessage" class="message"></div>
+        <div id="profileTotal" class="message success"></div>
+        <div id="profileTuition" class="message success"></div>
         <ul id="profileList" class="courses-list"></ul>
         <button id="profileBackBtn" class="secondary-btn">Back to Courses</button>
       </div>
@@ -56,6 +58,8 @@
       const profilePage = document.getElementById("profilePage");
       const coursesList = document.getElementById("coursesList");
       const profileList = document.getElementById("profileList");
+      const profileTotal = document.getElementById("profileTotal");
+      const profileTuition = document.getElementById("profileTuition");
       const coursesMessage = document.getElementById("coursesMessage");
       const profileMessage = document.getElementById("profileMessage");
       const logoutBtn = document.getElementById("logoutBtn");
@@ -172,10 +176,33 @@
           if (!Array.isArray(data.courses) || data.courses.length === 0) {
             profileMessage.className = "message success";
             profileMessage.textContent = "You are not enrolled in any courses.";
+            profileTotal.textContent = "Total Credit Hours: 0";
             return;
           }
 
+          // Sum credit hours (handle different casing, prefer numeric coercion)
+          const totalCredits = data.courses.reduce((sum, course) => {
+            const credits = Number(course.credit_hours ?? course.Credit_Hours ?? course.CreditHours ?? 0);
+            return sum + (Number.isNaN(credits) ? 0 : credits);
+          }, 0);
+
+          // Sum tuition costs (strings like "$1234.50")
+          function parseMoney(value) {
+            if (value == null) return 0;
+            const s = String(value).trim();
+            // Remove anything that's not digit, dot, or minus
+            const num = Number(s.replace(/[^0-9.-]+/g, ""));
+            return Number.isNaN(num) ? 0 : num;
+          }
+
+          const totalTuition = data.courses.reduce((sum, course) => {
+            const tuition = parseMoney(course.Tuition_Cost ?? course.tuition_cost ?? course.TuitionCost ?? course.Tuition ?? 0);
+            return sum + tuition;
+          }, 0);
+
           profileMessage.textContent = "";
+          profileTotal.textContent = `Total Credit Hours: ${totalCredits}`;
+          profileTuition.textContent = `Total Tuition: $${totalTuition.toFixed(2)}`;
           data.courses.forEach((course) => {
             const item = document.createElement("li");
             item.className = "course-item";
