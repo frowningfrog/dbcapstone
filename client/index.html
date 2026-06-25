@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Capstone</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <link rel="stylesheet" href="/style.css" />    <title>Capstone</title>
   </head>
   <body>
     <div class="container">
@@ -30,145 +29,117 @@
           <div id="registerMessage" class="message"></div>
         </form>
       </div>
+      <div id="coursesPage" class="courses-view hidden">
+        <h1>Courses</h1>
+        <div id="coursesMessage" class="message"></div>
+        <ul id="coursesList" class="courses-list"></ul>
+        <button id="logoutBtn" class="secondary-btn">Logout</button>
+      </div>
     </div>
 
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
 
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      .container {
-        width: 100%;
-        max-width: 400px;
-        padding: 20px;
-      }
-
-      .form-wrapper {
-        position: relative;
-        height: 500px;
-      }
-
-      .form {
-        position: absolute;
-        width: 100%;
-        background: white;
-        padding: 40px;
-        border-radius: 10px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.3s ease;
-        pointer-events: none;
-      }
-
-      .form.active {
-        opacity: 1;
-        transform: translateX(0);
-        pointer-events: all;
-      }
-
-      .form h1 {
-        text-align: center;
-        margin-bottom: 30px;
-        color: #333;
-        font-size: 28px;
-      }
-
-      .form input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 5px;
-        font-size: 14px;
-        transition: border-color 0.3s;
-      }
-
-      .form input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-      }
-
-      .form button[type="submit"] {
-        width: 100%;
-        padding: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: transform 0.2s;
-      }
-
-      .form button[type="submit"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-      }
-
-      .form button[type="submit"]:active {
-        transform: translateY(0);
-      }
-
-      .toggle {
-        text-align: center;
-        margin-top: 20px;
-        color: #666;
-        font-size: 14px;
-      }
-
-      .toggle button {
-        background: none;
-        border: none;
-        color: #667eea;
-        cursor: pointer;
-        text-decoration: underline;
-        font-size: 14px;
-        padding: 0;
-      }
-
-      .toggle button:hover {
-        color: #764ba2;
-      }
-
-      .message {
-        margin-top: 15px;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-        font-size: 14px;
-        min-height: 20px;
-      }
-
-      .message.error {
-        background-color: #ffebee;
-        color: #c62828;
-      }
-
-      .message.success {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-      }
-    </style>
 
     <script>
       const loginForm = document.getElementById("loginForm");
       const registerForm = document.getElementById("registerForm");
       const toRegisterBtn = document.getElementById("toRegister");
       const toLoginBtn = document.getElementById("toLogin");
+      const coursesPage = document.getElementById("coursesPage");
+      const coursesList = document.getElementById("coursesList");
+      const coursesMessage = document.getElementById("coursesMessage");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const formWrapper = document.querySelector(".form-wrapper");
+
+      const apiAuth = {
+        login: "/api/auth/login",
+        register: "/api/auth/register",
+        courses: "/api/courses",
+      };
+
+      function showCoursesView() {
+        formWrapper.classList.add("hidden");
+        coursesPage.classList.remove("hidden");
+        coursesPage.classList.add("active");
+        loginForm.classList.remove("active");
+        registerForm.classList.remove("active");
+      }
+
+      function showAuthView() {
+        formWrapper.classList.remove("hidden");
+        coursesPage.classList.add("hidden");
+        coursesPage.classList.remove("active");
+        loginForm.classList.add("active");
+      }
+
+      async function fetchCourses() {
+        coursesMessage.textContent = "Loading courses...";
+        coursesMessage.className = "message";
+        coursesList.innerHTML = "";
+
+        try {
+          const response = await fetch(apiAuth.courses, {
+            headers: { "Content-Type": "application/json" },
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            coursesMessage.className = "message error";
+            coursesMessage.textContent = data.message || "Unable to load courses.";
+            return;
+          }
+
+          if (!Array.isArray(data.courses) || data.courses.length === 0) {
+            coursesMessage.className = "message success";
+            coursesMessage.textContent = "No courses found.";
+            return;
+          }
+
+          coursesMessage.textContent = "";
+          data.courses.forEach((course) => {
+            const item = document.createElement("li");
+            item.className = "course-item";
+            const fieldList = Object.entries(course)
+              .map(([key, value]) => `<div><strong>${key}:</strong> ${value ?? ""}</div>`)
+              .join("");
+            item.innerHTML = fieldList;
+            coursesList.appendChild(item);
+          });
+        } catch (err) {
+          coursesMessage.className = "message error";
+          coursesMessage.textContent = "Unable to load courses.";
+        }
+      }
+
+      async function handleAuthSubmit(url, messageDiv) {
+        const formData = new FormData(messageDiv.form);
+        const email = formData.get("email");
+        const password = formData.get("password");
+
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            messageDiv.className = "message success";
+            messageDiv.textContent = data.message;
+            localStorage.setItem("token", data.token);
+            showCoursesView();
+            await fetchCourses();
+          } else {
+            messageDiv.className = "message error";
+            messageDiv.textContent = data.message;
+          }
+        } catch (err) {
+          messageDiv.className = "message error";
+          messageDiv.textContent = "An error occurred";
+        }
+      }
 
       // Form switching
       toRegisterBtn.addEventListener("click", (e) => {
@@ -183,15 +154,14 @@
         loginForm.classList.add("active");
       });
 
-      // Login form submission
       loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const messageDiv = document.getElementById("loginMessage");
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
-        const messageDiv = document.getElementById("loginMessage");
 
         try {
-          const response = await fetch("/api/auth/login", {
+          const response = await fetch(apiAuth.login, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -203,9 +173,8 @@
             messageDiv.className = "message success";
             messageDiv.textContent = data.message;
             localStorage.setItem("token", data.token);
-            setTimeout(() => {
-              window.location.href = "/courses";
-            }, 1000);
+            showCoursesView();
+            await fetchCourses();
           } else {
             messageDiv.className = "message error";
             messageDiv.textContent = data.message;
@@ -216,7 +185,6 @@
         }
       });
 
-      // Register form submission
       registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("registerEmail").value;
@@ -231,7 +199,7 @@
         }
 
         try {
-          const response = await fetch("/api/auth/register", {
+          const response = await fetch(apiAuth.register, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -243,9 +211,8 @@
             messageDiv.className = "message success";
             messageDiv.textContent = data.message;
             localStorage.setItem("token", data.token);
-            setTimeout(() => {
-              window.location.href = "/courses";
-            }, 1000);
+            showCoursesView();
+            await fetchCourses();
           } else {
             messageDiv.className = "message error";
             messageDiv.textContent = data.message;
@@ -254,6 +221,13 @@
           messageDiv.className = "message error";
           messageDiv.textContent = "An error occurred";
         }
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        coursesMessage.textContent = "";
+        coursesList.innerHTML = "";
+        showAuthView();
       });
     </script>
   </body>
