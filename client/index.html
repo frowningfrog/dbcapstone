@@ -77,10 +77,13 @@
         coursesList.innerHTML = "";
 
         try {
-          const response = await fetch(apiAuth.courses, {
-            headers: { "Content-Type": "application/json" },
-          });
+          const token = localStorage.getItem("token");
+          const headers = { "Content-Type": "application/json" };
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
+          }
 
+          const response = await fetch(apiAuth.courses, { headers });
           const data = await response.json();
 
           if (!response.ok) {
@@ -100,9 +103,15 @@
             const item = document.createElement("li");
             item.className = "course-item";
             const fieldList = Object.entries(course)
+              .filter(([key]) => key !== "isEnrolled")
               .map(([key, value]) => `<div><strong>${key}:</strong> ${value ?? ""}</div>`)
               .join("");
-            item.innerHTML = fieldList;
+
+            const action = course.isEnrolled
+              ? `<div class="enrolled-label">Already enrolled</div>`
+              : `<button class="enroll-button" data-course-id="${course.id}">Enroll</button>`;
+
+            item.innerHTML = `${fieldList}${action}`;
             coursesList.appendChild(item);
           });
         } catch (err) {
@@ -110,6 +119,44 @@
           coursesMessage.textContent = "Unable to load courses.";
         }
       }
+
+      coursesList.addEventListener("click", async (event) => {
+        if (!event.target.matches(".enroll-button")) {
+          return;
+        }
+
+        const courseId = event.target.dataset.courseId;
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          coursesMessage.className = "message error";
+          coursesMessage.textContent = "You must be logged in to enroll.";
+          return;
+        }
+
+        try {
+          const response = await fetch(`${apiAuth.courses}/${courseId}/enroll`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            coursesMessage.className = "message success";
+            coursesMessage.textContent = data.message;
+            await fetchCourses();
+          } else {
+            coursesMessage.className = "message error";
+            coursesMessage.textContent = data.message || "Unable to enroll.";
+          }
+        } catch (err) {
+          coursesMessage.className = "message error";
+          coursesMessage.textContent = "Unable to enroll.";
+        }
+      });
 
       async function handleAuthSubmit(url, messageDiv) {
         const formData = new FormData(messageDiv.form);
