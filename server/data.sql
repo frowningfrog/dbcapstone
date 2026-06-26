@@ -9,14 +9,8 @@ NO CYCLE;
 CREATE TABLE IF NOT EXISTS public.student
 (
     student_id integer NOT NULL DEFAULT nextval('student_student_id_seq'::regclass),
-    first_name varchar(100) NOT NULL,
-    last_name varchar(100) NOT NULL,
     email varchar(300),
-    address varchar(500) NOT NULL,
-    password varchar(500),
-    activebool boolean NOT NULL DEFAULT true,
-    create_date date NOT NULL DEFAULT ('now'::text)::date,
-    last_update timestamp without time zone DEFAULT now()
+    password varchar(500)
 );
 
 -- SELECT * FROM courses ORDER BY course_id;
@@ -38,7 +32,6 @@ CREATE TABLE IF NOT EXISTS courses (
 CREATE TABLE IF NOT EXISTS enrollment (
     student_id integer NOT NULL,
     course_id varchar(1000) NOT NULL,
-    enrolled_at timestamp without time zone DEFAULT now(),
     PRIMARY KEY (student_id, course_id),
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
