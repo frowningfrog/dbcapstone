@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS courses (
 );
 
 -- Junction table for student ↔ course enrollment
-CREATE TABLE IF NOT EXISTS enrollments (
+CREATE TABLE IF NOT EXISTS enrollment (
     student_id integer NOT NULL,
     course_id varchar(1000) NOT NULL,
     enrolled_at timestamp without time zone DEFAULT now(),
