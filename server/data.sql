@@ -9,8 +9,13 @@ NO CYCLE;
 CREATE TABLE IF NOT EXISTS public.student
 (
     student_id integer NOT NULL DEFAULT nextval('student_student_id_seq'::regclass),
-    email varchar(300),
-    password varchar(500)
+    first_name varchar(255) NOT NULL DEFAULT '',
+    last_name varchar(255) NOT NULL DEFAULT '',
+    email varchar(300) NOT NULL UNIQUE,
+    address varchar(1000) NOT NULL DEFAULT '',
+    password varchar(500) NOT NULL,
+    activebool boolean NOT NULL DEFAULT true,
+    is_admin boolean NOT NULL DEFAULT false
 );
 
 -- SELECT * FROM courses ORDER BY course_id;
@@ -20,12 +25,12 @@ CREATE TABLE IF NOT EXISTS public.student
 
 CREATE TABLE IF NOT EXISTS courses (
     Course_ID varchar(1000) PRIMARY KEY,
-    Course_Title varchar(1000),
-    Course_Description varchar(2000),
+    Course_Title varchar(1000) NOT NULL,
+    Course_Description varchar(2000) NOT NULL,
     Classroom_Number varchar(500), 
     Capacity integer,
-    Credit_Hours integer,
-    Tuition_Cost varchar(500)
+    Credit_Hours integer NOT NULL,
+    Tuition_Cost varchar(500) NOT NULL
 );
 
 -- Junction table for student ↔ course enrollment

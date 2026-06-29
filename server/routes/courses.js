@@ -30,6 +30,10 @@ async function requireAuth(req, res, next) {
   next();
 }
 
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 // GET all courses with enrollment status for the logged-in student
 router.get("/", async (req, res) => {
   try {
@@ -95,8 +99,17 @@ router.get("/profile", requireAuth, async (req, res) => {
 router.post("/:courseId/enroll", requireAuth, async (req, res) => {
   try {
     const courseId = req.params.courseId;
-    if (!courseId || typeof courseId !== "string") {
+    if (!isNonEmptyString(courseId)) {
       return res.status(400).json({ message: "Invalid course ID." });
+    }
+
+    const { rows: existingCourse } = await pool.query(
+      "SELECT 1 FROM courses WHERE course_id = $1",
+      [courseId],
+    );
+
+    if (existingCourse.length === 0) {
+      return res.status(404).json({ message: "Course not found." });
     }
 
     const { rows } = await pool.query(
@@ -106,7 +119,7 @@ router.post("/:courseId/enroll", requireAuth, async (req, res) => {
 
     if (rows.length > 0) {
       return res
-        .status(400)
+        .status(409)
         .json({ message: "Already enrolled in this course." });
     }
 
@@ -126,8 +139,17 @@ router.post("/:courseId/enroll", requireAuth, async (req, res) => {
 router.delete("/:courseId/drop", requireAuth, async (req, res) => {
   try {
     const courseId = req.params.courseId;
-    if (!courseId || typeof courseId !== "string") {
+    if (!isNonEmptyString(courseId)) {
       return res.status(400).json({ message: "Invalid course ID." });
+    }
+
+    const { rows: existingCourse } = await pool.query(
+      "SELECT 1 FROM courses WHERE course_id = $1",
+      [courseId],
+    );
+
+    if (existingCourse.length === 0) {
+      return res.status(404).json({ message: "Course not found." });
     }
 
     const { rowCount } = await pool.query(
