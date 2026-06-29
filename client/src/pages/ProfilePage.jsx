@@ -8,6 +8,17 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const totalCreditHours = courses.reduce(
+    (sum, course) => sum + Number(course.credit_hours || 0),
+    0,
+  );
+  const totalTuition = courses.reduce((sum, course) => {
+    const tuitionValue = parseFloat(
+      String(course.tuition_cost || "").replace(/[^0-9.-]+/g, ""),
+    );
+    return sum + (Number.isFinite(tuitionValue) ? tuitionValue : 0);
+  }, 0);
+
   useEffect(() => {
     async function loadProfileCourses() {
       setLoading(true);
@@ -72,6 +83,16 @@ export default function ProfilePage() {
               ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
               : user?.email}
           </p>
+          <div className="profile-summary">
+            <div className="profile-summary-item">
+              <span>Total credit hours </span>
+              <strong>{totalCreditHours}</strong>
+            </div>
+            <div className="profile-summary-item">
+              <span>Total tuition </span>
+              <strong>${totalTuition.toFixed(2)}</strong>
+            </div>
+          </div>
         </div>
 
         {error && <div className="alert alert-error">{error}</div>}

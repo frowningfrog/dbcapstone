@@ -81,6 +81,11 @@ export default function CoursesPage() {
     return matchesSearch && matchesAvailability;
   });
 
+  function formatMoney(value) {
+    const n = parseFloat(String(value || "").replace(/[^0-9.-]+/g, ""));
+    return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+  }
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -156,20 +161,26 @@ export default function CoursesPage() {
               <p className="course-meta">{course.course_id}</p>
               <p>{course.course_description}</p>
               <p className="course-meta">
-                Room: {course.classroom_number || "TBA"} | Credits: {course.credit_hours}
+                Room: {course.classroom_number || "TBA"} | Credits:{" "}
+                {course.credit_hours} | Tuition: $
+                {formatMoney(course.tuition_cost)}
               </p>
               <button
                 className={course.isEnrolled ? "btn-danger" : "btn-primary"}
                 type="button"
                 onClick={() =>
-                  course.isEnrolled ? drop(course.course_id) : enroll(course.course_id)
+                  course.isEnrolled
+                    ? drop(course.course_id)
+                    : enroll(course.course_id)
                 }
               >
                 {course.isEnrolled ? "Drop" : "Enroll"}
               </button>
             </article>
           ))}
-          {visibleCourses.length === 0 && <p>No courses matched your filters.</p>}
+          {visibleCourses.length === 0 && (
+            <p>No courses matched your filters.</p>
+          )}
         </div>
       </main>
     </div>
