@@ -74,14 +74,25 @@ router.post("/register", async (req, res) => {
         is_admin
       ) VALUES ($1, $2, $3, $4, $5, true, $6)
       RETURNING student_id, first_name, last_name, email, address, activebool, is_admin`,
-      [first_name || "", last_name || "", email, address || "", hashedPassword, isAdmin],
+      [
+        first_name || "",
+        last_name || "",
+        email,
+        address || "",
+        hashedPassword,
+        isAdmin,
+      ],
     );
 
     const user = result.rows[0];
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.student_id, email: user.email, is_admin: user.is_admin === true },
+      {
+        id: user.student_id,
+        email: user.email,
+        is_admin: user.is_admin === true,
+      },
       JWT_SECRET,
       {
         expiresIn: "24h",
@@ -129,7 +140,11 @@ router.post("/login", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.student_id, email: user.email, is_admin: user.is_admin === true },
+      {
+        id: user.student_id,
+        email: user.email,
+        is_admin: user.is_admin === true,
+      },
       JWT_SECRET,
       {
         expiresIn: "24h",

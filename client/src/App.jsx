@@ -2,6 +2,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLogin from "./pages/AdminLogin";
+import StudentLogin from "./pages/StudentLogin";
+import StudentRegister from "./pages/StudentRegistration";
 import AdminRegister from "./pages/AdminRegistration";
 import AdminPage from "./pages/AdminPage";
 import CoursesPage from "./pages/CoursesPage";
@@ -15,7 +17,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/courses" replace />} />
-          <Route path="/login" element={<AdminLogin />} />
+          <Route path="/login" element={<StudentLogin />} />
+          <Route path="/register" element={<StudentRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
 

@@ -49,7 +49,7 @@ async function ensureSchema() {
   );
 }
 
-app.get("*", (req, res) => {
+app.get("*splat", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
 });
 
