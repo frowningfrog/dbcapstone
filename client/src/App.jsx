@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { useAuth } from "./context/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLogin from "./pages/AdminLogin";
 import StudentLogin from "./pages/StudentLogin";
@@ -16,7 +17,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/courses" replace />} />
+          <Route path="/" element={<HomeRedirect />} />
           <Route path="/login" element={<StudentLogin />} />
           <Route path="/register" element={<StudentRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -66,3 +67,9 @@ function App() {
 }
 
 export default App;
+
+function HomeRedirect() {
+  const { user } = useAuth();
+  if (user?.is_admin) return <Navigate to="/admin" replace />;
+  return <Navigate to="/courses" replace />;
+}

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 export default function AdminRegister() {
+  const isAdmin = true;
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -41,7 +42,14 @@ export default function AdminRegister() {
 
     setLoading(true);
     try {
-      await register({ first_name, last_name, email, address, password });
+      await register({
+        first_name,
+        last_name,
+        email,
+        address,
+        password,
+        isAdmin,
+      });
       navigate("/admin/login");
     } catch (err) {
       setError(err.message);

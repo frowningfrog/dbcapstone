@@ -23,6 +23,7 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
+      console.log(user);
       navigate(user?.is_admin ? "/admin" : "/profile");
     } catch (err) {
       setError(err.message);

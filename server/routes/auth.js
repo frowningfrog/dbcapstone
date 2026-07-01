@@ -40,7 +40,8 @@ function extractToken(req) {
 // POST /register
 router.post("/register", async (req, res) => {
   try {
-    const { first_name, last_name, email, address, password } = req.body;
+    const { first_name, last_name, email, address, password, isAdmin } =
+      req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
@@ -61,7 +62,7 @@ router.post("/register", async (req, res) => {
 
     // Create user
     const adminEmails = getAdminEmails();
-    const isAdmin = adminEmails.has(String(email).toLowerCase());
+    // const isAdmin = adminEmails.has(String(email).toLowerCase());
 
     const result = await pool.query(
       `INSERT INTO student (
